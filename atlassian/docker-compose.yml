@@ -1,0 +1,86 @@
+version: '3.9'
+name: atlassian_stack
+services:
+  jira_postgres:
+    image: postgres:15
+    container_name: jira_postgres
+    environment:
+      POSTGRES_USER: atlassian
+      POSTGRES_PASSWORD: atlassian
+      POSTGRES_DB: jiradb
+    volumes:
+      - jira_postgres_data:/var/lib/postgresql/data
+    networks:
+      - atlassian_net
+
+  confluence_postgres:
+    image: postgres:15
+    container_name: confluence_postgres
+    environment:
+      POSTGRES_USER: atlassian
+      POSTGRES_PASSWORD: atlassian
+      POSTGRES_DB: confluencedb
+    volumes:
+      - confluence_postgres_data:/var/lib/postgresql/data
+    networks:
+      - atlassian_net
+
+  jira:
+    image: atlassian/jira-software:latest
+    container_name: jira
+    depends_on:
+      - jira_postgres
+    environment:
+      ATL_DB_TYPE: postgres72
+      ATL_DB_DRIVER: org.postgresql.Driver
+      ATL_JDBC_URL: jdbc:postgresql://jira_postgres:5432/jiradb
+      ATL_JDBC_USER: atlassian
+      ATL_JDBC_PASSWORD: atlassian
+      ATL_PROXY_NAME: jira.localhost
+      ATL_PROXY_PORT: 80
+      ATL_TOMCAT_SCHEME: http
+    volumes:
+      - jira_data:/var/atlassian/application-data/jira
+    networks:
+      - atlassian_net
+  confluence:
+    image: atlassian/confluence-server:latest
+    container_name: confluence
+    depends_on:
+      - confluence_postgres
+    environment:
+      ATL_DB_TYPE: postgresql
+      ATL_DB_DRIVER: org.postgresql.Driver
+      ATL_JDBC_URL: jdbc:postgresql://confluence_postgres:5432/confluencedb
+      ATL_JDBC_USER: atlassian
+      ATL_JDBC_PASSWORD: atlassian
+      ATL_PROXY_NAME: confluence.localhost
+      ATL_PROXY_PORT: 80
+      ATL_TOMCAT_SCHEME: http
+    volumes:
+      - confluence_data:/var/atlassian/application-data/confluence
+    networks:
+      - atlassian_net
+
+  nginx:
+    image: nginx:latest
+    container_name: reverse_proxy
+    depends_on:
+      - jira
+      - confluence
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - '80:80'
+    networks:
+      - atlassian_net
+
+volumes:
+  jira_postgres_data:
+  confluence_postgres_data:
+  jira_data:
+  confluence_data:
+
+networks:
+  atlassian_net:
+    driver: bridge
