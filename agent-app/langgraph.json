@@ -1,5 +1,5 @@
 {
-	"dependencies": ["langchain_openai", "./src/"],
+	"dependencies": ["langchain_openai", "."],
 	"graphs": {
 		"agent": "./src/agent.py:agent"
 	},
