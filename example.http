@@ -1,0 +1,39 @@
+@baseConfluenceUrl = http://confluence.localhost
+@confluenceToken = {{$dotenv PAT_CONFLUENCE}}
+
+@baseJiraUrl = http://jira.localhost
+@jiraToken = {{$dotenv PAT_JIRA}}
+// create a new page in Confluence
+POST {{baseConfluenceUrl}}/rest/api/content/
+Content-Type: application/json
+Authorization: Bearer {{confluenceToken}}
+
+{
+  "type": "page",
+  "title": "New Page from API",
+  "space": {
+    "key": "PROJ"
+  },
+  "body": {
+    "storage": {
+      "value": "<p>This is a new page created via the Confluence REST API.</p>",
+      "representation": "storage"
+    }
+  }
+}
+
+{
+  "cql": "type=page AND title=\"New Page from API\" AND space.key=\"PROJ\""
+},
+
+###
+
+GET {{baseConfluenceUrl}}/rest/api/content/search?cql=type=page+AND+creator=currentUser()
+Authorization: Bearer {{confluenceToken}}
+Accept: application/json
+
+###
+
+GET {{baseJiraUrl}}/rest/api/3/jql/autocompletedata
+Authorization: Bearer {{jiraToken}}
+Accept: application/json
