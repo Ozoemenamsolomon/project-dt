@@ -1,19 +1,14 @@
 from langchain.agents import create_agent
+from middleware.error import handle_tool_errors
+from tools.sample import send_email
+from mcp.atlassian import mcp_client
 
-def send_email(to: str, subject: str, body: str):
-    """Send an email"""
-    email = {
-        "to": to,
-        "subject": subject,
-        "body": body
-    }
-    # ... email sending logic
 
-    return f"Email sent to {to}"
-
+mcp_tools = mcp_client.get_tools()
 agent = create_agent(
     "openai:gpt-4o",
-    tools=[send_email],
+    tools=[send_email, *mcp_tools],
+    middleware=[handle_tool_errors],
     system_prompt="You are an email assistant. Always use the send_email tool.",
 )
     
