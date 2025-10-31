@@ -44,6 +44,7 @@ services:
   jira:
     image: atlassian/jira-software:latest
     container_name: jira
+    restart: unless-stopped
     depends_on:
       - jira_postgres
     environment:
@@ -52,9 +53,10 @@ services:
       ATL_JDBC_URL: jdbc:postgresql://jira_postgres:5432/jiradb
       ATL_JDBC_USER: atlassian
       ATL_JDBC_PASSWORD: atlassian
-      ATL_PROXY_NAME: jira.localhost
-      ATL_PROXY_PORT: 80
-      ATL_TOMCAT_SCHEME: http
+      # set these to your public domain and scheme
+      ATL_PROXY_NAME: your.public.domain.example
+      ATL_PROXY_PORT: 443
+      ATL_TOMCAT_SCHEME: https
     volumes:
       - jira_data:/var/atlassian/application-data/jira
     networks:
@@ -62,6 +64,7 @@ services:
   confluence:
     image: atlassian/confluence-server:latest
     container_name: confluence
+    restart: unless-stopped
     depends_on:
       - confluence_postgres
     environment:
@@ -70,9 +73,10 @@ services:
       ATL_JDBC_URL: jdbc:postgresql://confluence_postgres:5432/confluencedb
       ATL_JDBC_USER: atlassian
       ATL_JDBC_PASSWORD: atlassian
-      ATL_PROXY_NAME: confluence.localhost
-      ATL_PROXY_PORT: 80
-      ATL_TOMCAT_SCHEME: http
+      # set these to your public domain and scheme
+      ATL_PROXY_NAME: your.public.domain.example
+      ATL_PROXY_PORT: 443
+      ATL_TOMCAT_SCHEME: https
     volumes:
       - confluence_data:/var/atlassian/application-data/confluence
     networks:
@@ -81,13 +85,17 @@ services:
   nginx:
     image: nginx:latest
     container_name: reverse_proxy
+    restart: unless-stopped
     depends_on:
       - jira
       - confluence
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      # mount certs directory if you will use self-managed certs
+      - ./certs:/etc/nginx/certs:ro
     ports:
       - '80:80'
+      - '443:443'
     networks:
       - atlassian_net
 
