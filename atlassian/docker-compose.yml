@@ -25,6 +25,22 @@ services:
     networks:
       - atlassian_net
 
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    depends_on:
+      - jira_postgres
+      - confluence_postgres
+    # ports:
+    #   - '8080:80'
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - atlassian_net
+
   jira:
     image: atlassian/jira-software:latest
     container_name: jira
@@ -80,6 +96,7 @@ volumes:
   confluence_postgres_data:
   jira_data:
   confluence_data:
+  pgadmin_data:
 
 networks:
   atlassian_net:
