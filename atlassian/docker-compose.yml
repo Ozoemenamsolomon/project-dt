@@ -1,4 +1,3 @@
-version: '3.9'
 name: atlassian_stack
 services:
   jira_postgres:
@@ -31,8 +30,6 @@ services:
     depends_on:
       - jira_postgres
       - confluence_postgres
-    # ports:
-    #   - '8080:80'
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
       PGADMIN_DEFAULT_PASSWORD: admin
@@ -84,6 +81,7 @@ services:
     depends_on:
       - jira
       - confluence
+      - pgadmin
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
